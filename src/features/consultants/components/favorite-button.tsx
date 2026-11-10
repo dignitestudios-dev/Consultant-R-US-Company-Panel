@@ -1,15 +1,14 @@
 "use client";
 
 import { Star } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { actions, useStore } from "@/lib/store";
-import type { Consultant } from "@/lib/data";
+import { useToggleFavorite } from "@/features/favorites/hooks/use-favorites";
+import type { Consultant } from "../types";
 import { cn } from "@/lib/utils";
 
 export function FavoriteButton({ person, className }: { person: Consultant; className?: string }) {
-  const { favorites } = useStore();
-  const on = favorites.includes(person.id);
+  const toggle = useToggleFavorite();
+  const on = person.isWishList;
   return (
     <Button
       type="button"
@@ -20,8 +19,7 @@ export function FavoriteButton({ person, className }: { person: Consultant; clas
       className={className}
       onClick={(e) => {
         e.stopPropagation();
-        const added = actions.toggleFavorite(person.id);
-        toast(added ? `${person.name} added to favorites` : `${person.name} removed from favorites`);
+        toggle.mutate({ id: person.id, isWishList: on });
       }}
     >
       <Star

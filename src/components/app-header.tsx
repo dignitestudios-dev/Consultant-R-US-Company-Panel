@@ -6,8 +6,14 @@ import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Building2, ChevronDown, LogOut, Star, Users } from "lucide-react";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -17,7 +23,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useStore } from "@/lib/store";
+import { useAuth } from "@/features/auth/hooks/use-auth";
+import { useLogout } from "@/features/auth/hooks/use-logout";
+import { useFavorites } from "@/features/favorites/hooks/use-favorites";
+import { companyDisplayName } from "@/features/company/hooks/use-company";
+import { initials } from "@/features/consultants/types";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -30,14 +40,23 @@ export function AppHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const [confirmLogout, setConfirmLogout] = useState(false);
-  const { company, favorites } = useStore();
-  const initials = company.name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+  const { user } = useAuth();
+  const logout = useLogout();
+  const favorites = useFavorites().data ?? [];
+  const companyName = companyDisplayName(user?.companyName);
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#374856] bg-card/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-[1440px] items-center gap-4 px-4 sm:px-6">
         <Link href="/consultants" aria-label="Consultants R US, home" className="flex-none">
-          <Image src="/logo.png" alt="Consultants R US" width={198} height={204} priority className="h-12 w-auto" />
+          <Image
+            src="/logo.png"
+            alt="Consultants R US"
+            width={198}
+            height={204}
+            priority
+            className="h-12 w-auto"
+          />
         </Link>
 
         <nav aria-label="Main" className="ml-2 flex flex-1 items-center gap-1 overflow-x-auto">
@@ -60,7 +79,9 @@ export function AppHeader() {
                     {favorites.length}
                   </span>
                 )}
-                {active && <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-gold" />}
+                {active && (
+                  <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-gold" />
+                )}
               </Link>
             );
           })}
@@ -73,9 +94,13 @@ export function AppHeader() {
             aria-label="Account menu"
           >
             <Avatar size="sm">
-              <AvatarFallback className="bg-secondary text-xs font-bold text-gold">{initials}</AvatarFallback>
+              <AvatarFallback className="bg-secondary text-xs font-bold text-gold">
+                {initials(companyName)}
+              </AvatarFallback>
             </Avatar>
-            <span className="hidden max-w-[160px] truncate text-sm font-semibold md:block">{company.name}</span>
+            <span className="hidden max-w-[160px] truncate text-sm font-semibold md:block">
+              {companyName}
+            </span>
             <ChevronDown className="size-4 text-muted-foreground" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
@@ -93,14 +118,14 @@ export function AppHeader() {
       <AlertDialog open={confirmLogout} onOpenChange={setConfirmLogout}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Log out of {company.name}?</AlertDialogTitle>
+            <AlertDialogTitle>Log out of {companyName}?</AlertDialogTitle>
             <AlertDialogDescription>
               You&apos;ll need to sign in again to find and contact consultants.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => router.push("/login")}>Log out</AlertDialogAction>
+            <AlertDialogAction onClick={() => void logout()}>Log out</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

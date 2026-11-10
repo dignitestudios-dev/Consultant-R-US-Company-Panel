@@ -99,14 +99,22 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image:
-      radial-gradient(55% 35% at 50% -8%, rgb(193 154 77 / 0.08), transparent 70%);
+    background-image: radial-gradient(55% 35% at 50% -8%, rgb(193 154 77 / 0.08), transparent 70%);
     background-repeat: no-repeat;
   }
   html {
     @apply font-sans;
   }
 }
-::selection { background: var(--primary); color: #fff; }
-html { scroll-behavior: smooth; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+::selection {
+  background: var(--primary);
+  color: #fff;
+}
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

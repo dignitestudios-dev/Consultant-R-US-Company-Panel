@@ -19,7 +19,14 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
           className="absolute -bottom-32 -left-24 size-[360px] rounded-full bg-white/10 blur-[110px]"
           aria-hidden="true"
         />
-        <Image src="/logo.png" alt="Consultants R US" width={198} height={204} priority className="relative h-24 w-auto self-start" />
+        <Image
+          src="/logo.png"
+          alt="Consultants R US"
+          width={198}
+          height={204}
+          priority
+          className="relative h-24 w-auto self-start"
+        />
         <div className="relative max-w-lg space-y-8">
           <div className="space-y-4">
             <h1 className="text-balance text-5xl font-extrabold leading-[1.08] tracking-tight">
@@ -31,7 +38,10 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
           </div>
           <ul className="space-y-3">
             {POINTS.map(({ icon: Icon, text }) => (
-              <li key={text} className="flex items-center gap-3 text-sm font-medium text-foreground/90">
+              <li
+                key={text}
+                className="flex items-center gap-3 text-sm font-medium text-foreground/90"
+              >
                 <span className="grid size-9 place-items-center rounded-lg bg-white/10 text-gold">
                   <Icon className="size-4" />
                 </span>
@@ -40,14 +50,17 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
             ))}
           </ul>
         </div>
-        <p className="relative text-xs text-foreground/60">
-          Prototype with sample data. Please don&apos;t enter real passwords.
-        </p>
       </aside>
 
       <main className="flex items-center justify-center px-5 py-12">
         <div className="w-full max-w-[400px] space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-500">
-          <Image src="/logo.png" alt="Consultants R US" width={198} height={204} className="mx-auto h-20 w-auto lg:hidden" />
+          <Image
+            src="/logo.png"
+            alt="Consultants R US"
+            width={198}
+            height={204}
+            className="mx-auto h-20 w-auto lg:hidden"
+          />
           {children}
         </div>
       </main>

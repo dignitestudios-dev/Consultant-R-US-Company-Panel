@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { AppProviders } from "@/providers/app-providers";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -19,7 +20,9 @@ export const viewport: Viewport = { themeColor: "#0c1622", colorScheme: "dark" }
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${jakarta.variable} dark h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   );
 }
