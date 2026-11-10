@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { AuthContainer } from "@/components/auth-container";
 import { BadgeCheck, Filter, Phone } from "lucide-react";
 
 const POINTS = [
@@ -9,8 +10,8 @@ const POINTS = [
 
 export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
-    <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
-      <aside className="relative hidden overflow-hidden border-r bg-card p-12 text-foreground lg:flex lg:flex-col lg:justify-between">
+    <div className="grid min-h-screen lg:h-screen lg:overflow-hidden lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+      <aside className="relative hidden lg:h-screen overflow-hidden border-r bg-card p-12 text-foreground lg:flex lg:flex-col lg:justify-between">
         <div
           className="absolute -right-24 -top-24 size-[420px] rounded-full bg-gold/30 blur-[110px]"
           aria-hidden="true"
@@ -52,16 +53,18 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
         </div>
       </aside>
 
-      <main className="flex items-center justify-center px-5 py-12">
-        <div className="w-full max-w-[400px] space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-500">
-          <Image
-            src="/logo.png"
-            alt="Consultants R US"
-            width={198}
-            height={204}
-            className="mx-auto h-20 w-auto lg:hidden"
-          />
-          {children}
+      <main className="min-w-0 lg:h-screen lg:overflow-x-hidden lg:overflow-y-auto">
+        <div className="flex min-h-full items-start justify-center px-5 py-12 lg:items-center">
+          <AuthContainer>
+            <Image
+              src="/logo.png"
+              alt="Consultants R US"
+              width={198}
+              height={204}
+              className="mx-auto h-20 w-auto lg:hidden"
+            />
+            {children}
+          </AuthContainer>
         </div>
       </main>
     </div>

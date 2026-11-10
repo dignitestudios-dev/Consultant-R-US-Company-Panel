@@ -20,7 +20,13 @@ export default function SetupPage() {
   return (
     <>
       <div className="space-y-2">
-        <p className="text-xs font-bold uppercase tracking-widest text-gold">Step 2 of 2</p>
+        <div className="flex items-center gap-3">
+          <div className="flex flex-1 gap-1.5" aria-hidden="true">
+            <span className="h-1 flex-1 rounded-full bg-gold" />
+            <span className="h-1 flex-1 rounded-full bg-gold" />
+          </div>
+          <p className="text-xs font-bold uppercase tracking-widest text-gold">Step 2 of 2</p>
+        </div>
         <h2 className="text-3xl font-extrabold tracking-tight">Set up company profile</h2>
         <p className="text-sm text-muted-foreground">
           {user?.companyName

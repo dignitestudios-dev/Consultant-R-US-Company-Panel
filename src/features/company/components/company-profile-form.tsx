@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Field, FileField, SelectField, TextField } from "@/components/auth-fields";
+import { Field, TextField } from "@/components/auth-fields";
+import { FileUpload, SelectField } from "@/components/form-controls";
 import { completeProfile, updateProfile } from "../api";
 import { MAX_FILE_MB, companySchema, splitLines, type CompanyValues } from "../schemas";
 import { COMPANY_SIZES, INDUSTRIES, webUrls, type Company } from "../types";
@@ -26,6 +29,26 @@ type Props = {
 
 const tooBig = (f?: File | null) => !!f && f.size > MAX_FILE_MB * 1024 * 1024;
 
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-4 rounded-xl border bg-card/60 p-5">
+      <div className="space-y-0.5">
+        <h3 className="text-sm font-bold">{title}</h3>
+        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
 export function CompanyProfileForm({ mode, initial, submitLabel, onSaved }: Props) {
   const dispatch = useAppDispatch();
   const qc = useQueryClient();
@@ -36,6 +59,7 @@ export function CompanyProfileForm({ mode, initial, submitLabel, onSaved }: Prop
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<CompanyValues>({
@@ -96,97 +120,142 @@ export function CompanyProfileForm({ mode, initial, submitLabel, onSaved }: Prop
 
   return (
     <form onSubmit={handleSubmit(submit)} noValidate className="space-y-5">
-      {mode === "edit" && (
-        <TextField
-          label="Company name"
-          error={errors.companyName?.message}
-          {...register("companyName")}
-        />
-      )}
-      <div className="grid gap-5 sm:grid-cols-2">
-        <SelectField
-          label="Industry focus"
-          placeholder="Select industry"
-          options={INDUSTRIES}
-          error={errors.industryFocus?.message}
-          {...register("industryFocus")}
-        />
-        <SelectField
-          label="Company size"
-          placeholder="Select size"
-          options={COMPANY_SIZES}
-          error={errors.companySize?.message}
-          {...register("companySize")}
-        />
-      </div>
-      <div className="grid gap-5 sm:grid-cols-3">
-        <TextField label="Country" error={errors.country?.message} {...register("country")} />
-        <TextField label="State" error={errors.state?.message} {...register("state")} />
-        <TextField label="City" error={errors.city?.message} {...register("city")} />
-      </div>
-      <Field label="Website URL (optional)" name="webUrls" error={errors.webUrls?.message}>
-        <Textarea
-          id="webUrls"
-          rows={2}
-          placeholder="https://example.com"
-          className="px-3.5 py-3 text-sm"
-          {...register("webUrls")}
-        />
-        <p className="text-xs text-muted-foreground">One URL per line.</p>
-      </Field>
-      <Field label="Description (optional)" name="description" error={errors.description?.message}>
-        <Textarea
-          id="description"
-          rows={5}
-          maxLength={1000}
-          placeholder="Describe your operations and the consultants you typically hire."
-          className="px-3.5 py-3 text-sm leading-relaxed"
-          {...register("description")}
-        />
-      </Field>
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        <FileField
-          label="Profile picture (optional)"
-          name="profilePicture"
-          accept="image/*"
-          error={fileErrors.picture}
-          onChange={(e) => setPicture(e.target.files?.[0] ?? null)}
-        />
-        {mode === "setup" && (
-          <FileField
-            label="Proof document *"
-            name="Licence"
-            accept="image/*,application/pdf"
-            hint="Business licence or similar. PDF or image."
-            error={fileErrors.licence}
-            onChange={(e) => setLicence(e.target.files?.[0] ?? null)}
+      <Section title="Company" description="What your company does and how big it is.">
+        {mode === "edit" && (
+          <TextField
+            label="Company name"
+            error={errors.companyName?.message}
+            {...register("companyName")}
           />
         )}
-      </div>
-
-      {mode === "edit" && initial?.profilePicture && !picture && (
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={removePicture}
-            onChange={(e) => setRemovePicture(e.target.checked)}
-            className="size-4 accent-[#a9742a]"
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Controller
+            control={control}
+            name="industryFocus"
+            render={({ field }) => (
+              <SelectField
+                label="Industry focus"
+                name="industryFocus"
+                placeholder="Select industry"
+                options={INDUSTRIES}
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.industryFocus?.message}
+              />
+            )}
           />
-          Remove current profile picture
-        </label>
-      )}
+          <Controller
+            control={control}
+            name="companySize"
+            render={({ field }) => (
+              <SelectField
+                label="Company size"
+                name="companySize"
+                placeholder="Select size"
+                options={COMPANY_SIZES}
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.companySize?.message}
+              />
+            )}
+          />
+        </div>
+      </Section>
 
-      <div className="flex justify-end">
-        <Button
-          type="submit"
-          variant="gold"
-          disabled={mutation.isPending}
-          className="h-11 min-w-40 font-bold"
-        >
-          {mutation.isPending && <Loader2 className="animate-spin" />} {submitLabel}
-        </Button>
-      </div>
+      <Section title="Location" description="Where your company is based.">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <TextField label="Country" error={errors.country?.message} {...register("country")} />
+          <TextField
+            label="State"
+            placeholder="e.g. Texas"
+            error={errors.state?.message}
+            {...register("state")}
+          />
+          <TextField
+            label="City"
+            placeholder="e.g. Houston"
+            error={errors.city?.message}
+            {...register("city")}
+          />
+        </div>
+      </Section>
+
+      <Section title="About" description="Optional, but it helps consultants know who you are.">
+        <Field label="Website URL" name="webUrls" error={errors.webUrls?.message}>
+          <Textarea
+            id="webUrls"
+            rows={2}
+            placeholder="https://example.com"
+            className="px-3.5 py-3 text-sm"
+            {...register("webUrls")}
+          />
+          <p className="text-xs text-muted-foreground">One URL per line.</p>
+        </Field>
+        <Field label="Description" name="description" error={errors.description?.message}>
+          <Textarea
+            id="description"
+            rows={4}
+            maxLength={1000}
+            placeholder="Describe your operations and the consultants you typically hire."
+            className="px-3.5 py-3 text-sm leading-relaxed"
+            {...register("description")}
+          />
+        </Field>
+      </Section>
+
+      <Section
+        title={mode === "setup" ? "Documents" : "Profile picture"}
+        description={
+          mode === "setup"
+            ? "Your proof document is used to verify your company."
+            : "Shown next to your company name."
+        }
+      >
+        <div className={mode === "setup" ? "grid gap-4 sm:grid-cols-2" : "grid gap-4"}>
+          <FileUpload
+            label="Profile picture"
+            name="profilePicture"
+            accept="image/*"
+            hint="PNG or JPG, optional"
+            file={picture}
+            onChange={setPicture}
+            error={fileErrors.picture}
+          />
+          {mode === "setup" && (
+            <FileUpload
+              label="Proof document"
+              name="Licence"
+              required
+              accept="image/*,application/pdf"
+              hint="Business licence. PDF or image"
+              file={licence}
+              onChange={setLicence}
+              error={fileErrors.licence}
+            />
+          )}
+        </div>
+        {mode === "edit" && initial?.profilePicture && !picture && (
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="remove-picture"
+              checked={removePicture}
+              onCheckedChange={(c) => setRemovePicture(c === true)}
+            />
+            <Label htmlFor="remove-picture" className="font-normal text-muted-foreground">
+              Remove current profile picture
+            </Label>
+          </div>
+        )}
+      </Section>
+
+      <Button
+        type="submit"
+        variant="gold"
+        disabled={mutation.isPending}
+        className="h-11 w-full text-sm font-bold"
+      >
+        {mutation.isPending && <Loader2 className="animate-spin" />} {submitLabel}
+      </Button>
     </form>
   );
 }
