@@ -1,11 +1,13 @@
 "use client";
 
-import { Download, ExternalLink, FileText } from "lucide-react";
+import { useState } from "react";
+import { Download, Eye, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { DocumentViewer } from "@/components/shared/document-viewer";
 import { Button } from "@/components/ui/button";
-import { fileExt } from "@/lib/format";
-import type { DocLink } from "../types";
-import { useTrackEvent } from "../hooks/use-track-event";
+import { fileExt } from "@/utils/format";
+import type { DocLink } from "@/features/consultants/types/consultants.types";
+import { useTrackEvent } from "@/features/consultants/hooks/use-track-event";
 
 async function download(url: string, name: string) {
   try {
@@ -21,8 +23,13 @@ async function download(url: string, name: string) {
     URL.revokeObjectURL(a.href);
     toast.success("Download started");
   } catch {
-    // Cross-origin storage may block fetch; the browser can still open the file.
-    window.open(url, "_blank", "noopener,noreferrer");
+    // Cross-origin storage may block fetch; let the browser download it directly.
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 }
 
@@ -39,6 +46,7 @@ export function DocumentList({
   empty: string;
 }) {
   const send = useTrackEvent(employeeId);
+  const [viewing, setViewing] = useState<DocLink | null>(null);
 
   if (docs.length === 0) {
     return (
@@ -65,10 +73,10 @@ export function DocumentList({
             size="sm"
             onClick={() => {
               if (track) send("view-resume");
-              window.open(d.url, "_blank", "noopener,noreferrer");
+              setViewing(d);
             }}
           >
-            <ExternalLink /> View
+            <Eye /> View
           </Button>
           <Button
             type="button"
@@ -83,6 +91,11 @@ export function DocumentList({
           </Button>
         </li>
       ))}
+      <DocumentViewer
+        url={viewing?.url ?? null}
+        title={viewing?.label ?? "Document"}
+        onClose={() => setViewing(null)}
+      />
     </ul>
   );
 }

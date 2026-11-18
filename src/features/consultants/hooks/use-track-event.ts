@@ -1,10 +1,10 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
-import { trackEvent, type TrackEvent } from "../api";
+import { useTrackEventMutation } from "@/features/consultants/api/consultants.mutations";
+import type { TrackEvent } from "@/features/consultants/types/consultants.types";
 
-/** Tells the backend (which notifies the consultant) a document was opened or downloaded. Never blocks the UI. */
+/** Never blocks the UI: fire and forget. */
 export function useTrackEvent(employeeId: string) {
-  const m = useMutation({ mutationFn: (e: TrackEvent) => trackEvent(employeeId, e) });
+  const m = useTrackEventMutation(employeeId);
   return (e: TrackEvent) => m.mutate(e);
 }

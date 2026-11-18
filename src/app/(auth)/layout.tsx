@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { AuthContainer } from "@/components/auth-container";
+import { AuthContainer } from "@/components/shared/auth-container";
 import { BadgeCheck, Filter, Phone } from "lucide-react";
 
 const POINTS = [

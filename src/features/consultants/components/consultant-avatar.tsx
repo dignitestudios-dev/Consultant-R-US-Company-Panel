@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { initials, type Consultant } from "../types";
-import { cn } from "@/lib/utils";
+import { initials } from "@/utils/format";
+import type { Consultant } from "@/features/consultants/types/consultants.types";
+import { cn } from "@/utils/cn";
 
 export function ConsultantAvatar({
   person,

@@ -1,11 +1,12 @@
 "use client";
 
 import { Calendar, Clock, Mail, MapPin, Phone, Plane, Repeat, Sun, Briefcase } from "lucide-react";
-import { Availability } from "./availability";
-import { DocumentList } from "./documents";
-import { formatDate, formatPhone, telHref } from "@/lib/format";
-import { mailtoHref } from "../email";
-import { allResumeDocs, type Consultant } from "../types";
+import { Availability } from "@/features/consultants/components/availability";
+import { DocumentList } from "@/features/consultants/components/documents";
+import { formatDate, formatPhone, telHref } from "@/utils/format";
+import { mailtoHref } from "@/features/consultants/utils/email.utils";
+import { allResumeDocs } from "@/features/consultants/utils/consultants.utils";
+import type { Consultant } from "@/features/consultants/types/consultants.types";
 
 function Fact({
   icon: Icon,

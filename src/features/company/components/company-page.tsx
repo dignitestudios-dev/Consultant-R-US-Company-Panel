@@ -1,25 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, FileCheck2, KeyRound, Trash2 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Eye, FileCheck2, KeyRound, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CompanyProfileForm } from "./company-profile-form";
-import { companyDisplayName, useCompany } from "../hooks/use-company";
+import { CompanyProfileForm } from "@/features/company/components/company-profile-form";
+import { useCompany } from "@/features/company/hooks/use-company";
+import { companyDisplayName } from "@/features/company/utils/company.utils";
 import {
   ChangePasswordDialog,
   DeleteAccountDialog,
-} from "@/features/auth/components/account-dialogs";
-import { initials } from "@/features/consultants/types";
+} from "@/features/company/components/account-dialogs";
+import { DocumentViewer } from "@/components/shared/document-viewer";
+import { ProfilePictureEditor } from "@/features/company/components/profile-picture-editor";
 import { PRIVACY_URL, TERMS_URL } from "@/config/routes";
 
 export function CompanyPage() {
   const { data: company, isPending } = useCompany();
   const [pwOpen, setPwOpen] = useState(false);
   const [delOpen, setDelOpen] = useState(false);
+  const [proofOpen, setProofOpen] = useState(false);
 
   if (isPending || !company) {
     return (
@@ -41,17 +43,10 @@ export function CompanyPage() {
       </div>
 
       <Card>
-        <CardHeader className="flex-row items-center gap-4">
-          <Avatar className="size-14 rounded-xl after:rounded-xl">
-            {company.profilePicture && (
-              <AvatarImage src={company.profilePicture} alt="" className="object-cover" />
-            )}
-            <AvatarFallback className="rounded-xl bg-secondary text-lg font-bold text-gold ring-1 ring-gold/25">
-              {initials(name)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1 space-y-1">
-            <CardTitle className="truncate text-lg font-bold">{name}</CardTitle>
+        <CardHeader className="items-center gap-5 text-center">
+          <ProfilePictureEditor company={company} name={name} />
+          <div className="min-w-0 space-y-1">
+            <CardTitle className="truncate text-xl font-bold">{name}</CardTitle>
             <CardDescription>
               {[company.industryFocus, place].filter(Boolean).join(" · ") || company.email}
             </CardDescription>
@@ -64,19 +59,18 @@ export function CompanyPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {company.licence && (
-            <a
-              href={company.licence}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 rounded-[10px] border bg-background/40 p-3 text-sm font-semibold transition-colors hover:border-gold/40"
+            <button
+              type="button"
+              onClick={() => setProofOpen(true)}
+              className="flex w-full items-center gap-3 rounded-[10px] border bg-background/40 p-3 text-left text-sm font-semibold transition-colors hover:border-gold/40"
             >
               <FileCheck2 className="size-5 text-gold" />
               <span className="flex-1">Proof document</span>
-              <ExternalLink className="size-4 text-muted-foreground" />
-            </a>
+              <Eye className="size-4 text-muted-foreground" />
+            </button>
           )}
           <CompanyProfileForm
-            key={company.companyName + (company.description ?? "") + (company.profilePicture ?? "")}
+            key={company.companyName + (company.description ?? "")}
             mode="edit"
             initial={company}
             submitLabel="Save changes"
@@ -118,6 +112,11 @@ export function CompanyPage() {
         </CardContent>
       </Card>
 
+      <DocumentViewer
+        url={proofOpen ? company.licence : null}
+        title="Proof document"
+        onClose={() => setProofOpen(false)}
+      />
       <ChangePasswordDialog open={pwOpen} onOpenChange={setPwOpen} />
       <DeleteAccountDialog open={delOpen} onOpenChange={setDelOpen} />
     </div>

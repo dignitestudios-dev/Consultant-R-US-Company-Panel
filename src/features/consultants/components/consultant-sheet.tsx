@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { Mail, Maximize2, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -12,14 +11,17 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CertificatesTab, ProfileTab, ResumesTab } from "./consultant-tabs";
-import { ConsultantAvatar } from "./consultant-avatar";
-import { FavoriteButton } from "./favorite-button";
-import { mailtoHref } from "../email";
-import { telHref } from "@/lib/format";
-import { ROUTES } from "@/config/routes";
-import type { Consultant } from "../types";
-import { cn } from "@/lib/utils";
+import {
+  CertificatesTab,
+  ProfileTab,
+  ResumesTab,
+} from "@/features/consultants/components/consultant-tabs";
+import { ConsultantAvatar } from "@/features/consultants/components/consultant-avatar";
+import { FavoriteButton } from "@/features/consultants/components/favorite-button";
+import { mailtoHref } from "@/features/consultants/utils/email.utils";
+import { formatPhone, telHref } from "@/utils/format";
+import type { Consultant } from "@/features/consultants/types/consultants.types";
+import { cn } from "@/utils/cn";
 
 export function ConsultantSheet({
   person,
@@ -64,18 +66,19 @@ export function ConsultantSheet({
                     )}
                   </p>
                 </div>
-                <Link
-                  href={ROUTES.consultant(person.id)}
-                  aria-label={`Open ${person.name} in full page`}
-                  title="Open full page"
-                  className={cn(
-                    buttonVariants({ variant: "ghost", size: "icon-lg" }),
-                    "text-muted-foreground",
-                  )}
-                >
-                  <Maximize2 className="size-4" />
-                </Link>
                 <FavoriteButton person={person} />
+              </div>
+              <div className="space-y-1 text-sm">
+                <p className="flex items-center gap-2 break-all">
+                  <Mail className="size-3.5 flex-none text-gold" />
+                  {person.email ?? <span className="text-muted-foreground">No email</span>}
+                </p>
+                <p className="flex items-center gap-2">
+                  <Phone className="size-3.5 flex-none text-gold" />
+                  {formatPhone(person.phone) ?? (
+                    <span className="text-muted-foreground">No phone</span>
+                  )}
+                </p>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <a

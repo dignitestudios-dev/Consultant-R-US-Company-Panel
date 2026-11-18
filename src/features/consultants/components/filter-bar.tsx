@@ -1,17 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Search, X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
+import { SearchInput } from "@/components/shared/search-input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { AGE_OPTIONS, EXPERIENCE_OPTIONS, filterCount, type Filters } from "../filters";
-import { CERTS, DEGREES, RESUME_TYPES } from "../types";
-import { INDUSTRIES } from "@/features/company/types";
-import { formatDate } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import {
+  AGE_OPTIONS,
+  EXPERIENCE_OPTIONS,
+  filterCount,
+} from "@/features/consultants/utils/filters.utils";
+import { CERTS, DEGREES, RESUME_TYPES } from "@/features/consultants/utils/consultants.utils";
+import type { Filters } from "@/features/consultants/types/consultants.types";
+import { INDUSTRIES } from "@/utils/constants";
+import { formatDate } from "@/utils/format";
+import { cn } from "@/utils/cn";
 
 function Trigger({ label, count }: { label: string; count: number }) {
   return (
@@ -35,15 +41,34 @@ function Trigger({ label, count }: { label: string; count: number }) {
 function Option({
   checked,
   onChange,
+  radio,
   children,
 }: {
   checked: boolean;
   onChange: () => void;
+  /** Single choice: shows a round radio instead of a checkbox. */
+  radio?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <label className="flex min-h-10 cursor-pointer items-center gap-3 rounded-md px-2.5 text-sm font-medium transition-colors hover:bg-muted">
-      <Checkbox checked={checked} onCheckedChange={onChange} />
+      {radio ? (
+        <>
+          <input
+            type="radio"
+            checked={checked}
+            onChange={onChange}
+            onClick={() => checked && onChange()}
+            className="peer sr-only"
+          />
+          <span
+            aria-hidden="true"
+            className="grid size-4 flex-none place-items-center rounded-full border border-input transition-colors peer-checked:border-gold peer-checked:after:size-2 peer-checked:after:rounded-full peer-checked:after:bg-gold peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50"
+          />
+        </>
+      ) : (
+        <Checkbox checked={checked} onCheckedChange={onChange} />
+      )}
       {children}
     </label>
   );
@@ -67,6 +92,7 @@ function SingleGroup({
         {options.map((o) => (
           <Option
             key={o.value}
+            radio
             checked={value === o.value}
             onChange={() => onChange(value === o.value ? "" : o.value)}
           >
@@ -196,16 +222,12 @@ export function FilterBar({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative w-full sm:w-72">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            aria-label="Search consultants by name"
-            value={query}
-            onChange={(e) => onQuery(e.target.value)}
-            placeholder="Search by name"
-            className="h-10 bg-card pl-9"
-          />
-        </div>
+        <SearchInput
+          label="Search consultants by name"
+          placeholder="Search by name"
+          value={query}
+          onChange={onQuery}
+        />
 
         <SingleGroup
           label="Experience"

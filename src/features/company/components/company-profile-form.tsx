@@ -1,31 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Field, TextField } from "@/components/auth-fields";
-import { FileUpload, SelectField } from "@/components/form-controls";
-import { completeProfile, updateProfile } from "../api";
-import { MAX_FILE_MB, companySchema, splitLines, type CompanyValues } from "../schemas";
-import { COMPANY_SIZES, INDUSTRIES, webUrls, type Company } from "../types";
-import { COMPANY_KEY } from "../hooks/use-company";
-import { setUser } from "@/features/auth/store/auth-slice";
-import { useAppDispatch } from "@/store/hooks";
-import { errorMessage } from "@/lib/api/errors";
-
-type Props = {
-  mode: "setup" | "edit";
-  initial?: Company | null;
-  submitLabel: string;
-  onSaved: (company: Company) => void;
-};
+import { Field, TextField } from "@/components/shared/auth-fields";
+import { FileUpload, SelectField } from "@/components/shared/form-controls";
+import { SearchableSelect } from "@/components/shared/searchable-select";
+import { companySchema } from "@/features/company/schemas/company.schema";
+import { MAX_FILE_MB } from "@/features/company/utils/company.utils";
+import { useSaveCompany } from "@/features/company/hooks/use-save-company";
+import type {
+  CompanyFormData,
+  CompanyProfileFormProps,
+} from "@/features/company/types/company.types";
+import { COMPANY_SIZES, INDUSTRIES } from "@/utils/constants";
+import { webUrls } from "@/utils/company";
+import { COUNTRY, US_STATES, citiesOf } from "@/utils/us-locations";
 
 const tooBig = (f?: File | null) => !!f && f.size > MAX_FILE_MB * 1024 * 1024;
 
@@ -49,20 +43,23 @@ function Section({
   );
 }
 
-export function CompanyProfileForm({ mode, initial, submitLabel, onSaved }: Props) {
-  const dispatch = useAppDispatch();
-  const qc = useQueryClient();
+export function CompanyProfileForm({
+  mode,
+  initial,
+  submitLabel,
+  onSaved,
+}: CompanyProfileFormProps) {
   const [picture, setPicture] = useState<File | null>(null);
   const [licence, setLicence] = useState<File | null>(null);
-  const [removePicture, setRemovePicture] = useState(false);
   const [fileErrors, setFileErrors] = useState<{ picture?: string; licence?: string }>({});
 
   const {
     register,
     control,
+    setValue,
     handleSubmit,
     formState: { errors },
-  } = useForm<CompanyValues>({
+  } = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
     defaultValues: {
       companyName: initial?.companyName ?? "",
@@ -70,43 +67,16 @@ export function CompanyProfileForm({ mode, initial, submitLabel, onSaved }: Prop
       companySize: initial?.companySize ?? "",
       description: initial?.description ?? "",
       webUrls: webUrls(initial).join("\n"),
-      country: initial?.country ?? "United States",
+      country: COUNTRY,
       state: initial?.state ?? "",
       city: initial?.city ?? "",
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: async (v: CompanyValues) => {
-      const fd = new FormData();
-      fd.append("industryFocus", v.industryFocus);
-      fd.append("companySize", v.companySize);
-      fd.append("description", v.description?.trim() ?? "");
-      fd.append("city", v.city);
-      fd.append("state", v.state);
-      fd.append("country", v.country);
-      for (const url of splitLines(v.webUrls)) fd.append("webUrl", url);
-      if (picture) fd.append("profilePicture", picture);
+  const mutation = useSaveCompany();
+  const state = useWatch({ control, name: "state" });
 
-      if (mode === "setup") {
-        if (licence) fd.append("Licence", licence);
-        return completeProfile(fd);
-      }
-      if (v.companyName) fd.append("companyName", v.companyName);
-      if (removePicture && !picture) fd.append("isProfileImageDeleted", "true");
-      return updateProfile(fd);
-    },
-    onSuccess: (company) => {
-      const next = { ...company, isProfileCompleted: true };
-      dispatch(setUser(next));
-      qc.invalidateQueries({ queryKey: COMPANY_KEY });
-      if (mode === "edit") toast.success("Company profile saved");
-      onSaved(next);
-    },
-    onError: (e) => toast.error(errorMessage(e)),
-  });
-
-  function submit(v: CompanyValues) {
+  function submit(v: CompanyFormData) {
     const next: typeof fileErrors = {};
     if (tooBig(picture)) next.picture = `Picture must be under ${MAX_FILE_MB} MB.`;
     if (mode === "setup") {
@@ -115,7 +85,15 @@ export function CompanyProfileForm({ mode, initial, submitLabel, onSaved }: Prop
     }
     setFileErrors(next);
     if (Object.keys(next).length) return;
-    mutation.mutate(v);
+    mutation.mutate(
+      { mode, values: v, files: { picture, licence, removePicture: false } },
+      {
+        onSuccess: (company) => {
+          if (mode === "edit") toast.success("Company profile saved");
+          onSaved({ ...company, isProfileCompleted: true });
+        },
+      },
+    );
   }
 
   return (
@@ -162,20 +140,43 @@ export function CompanyProfileForm({ mode, initial, submitLabel, onSaved }: Prop
         </div>
       </Section>
 
-      <Section title="Location" description="Where your company is based.">
-        <div className="grid gap-4 sm:grid-cols-3">
-          <TextField label="Country" error={errors.country?.message} {...register("country")} />
-          <TextField
-            label="State"
-            placeholder="e.g. Texas"
-            error={errors.state?.message}
-            {...register("state")}
+      <Section title="Location" description="Where your company is based in the United States.">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Controller
+            control={control}
+            name="state"
+            render={({ field }) => (
+              <SearchableSelect
+                label="State"
+                name="state"
+                placeholder="Select state"
+                searchPlaceholder="Search states"
+                options={US_STATES}
+                value={field.value}
+                onChange={(v) => {
+                  if (v !== field.value) setValue("city", "", { shouldValidate: false });
+                  field.onChange(v);
+                }}
+                error={errors.state?.message}
+              />
+            )}
           />
-          <TextField
-            label="City"
-            placeholder="e.g. Houston"
-            error={errors.city?.message}
-            {...register("city")}
+          <Controller
+            control={control}
+            name="city"
+            render={({ field }) => (
+              <SearchableSelect
+                label="City"
+                name="city"
+                placeholder={state ? "Select city" : "Select a state first"}
+                searchPlaceholder="Search cities"
+                options={citiesOf(state)}
+                value={field.value}
+                onChange={field.onChange}
+                disabled={!state}
+                error={errors.city?.message}
+              />
+            )}
           />
         </div>
       </Section>
@@ -203,25 +204,21 @@ export function CompanyProfileForm({ mode, initial, submitLabel, onSaved }: Prop
         </Field>
       </Section>
 
-      <Section
-        title={mode === "setup" ? "Documents" : "Profile picture"}
-        description={
-          mode === "setup"
-            ? "Your proof document is used to verify your company."
-            : "Shown next to your company name."
-        }
-      >
-        <div className={mode === "setup" ? "grid gap-4 sm:grid-cols-2" : "grid gap-4"}>
-          <FileUpload
-            label="Profile picture"
-            name="profilePicture"
-            accept="image/*"
-            hint="PNG or JPG, optional"
-            file={picture}
-            onChange={setPicture}
-            error={fileErrors.picture}
-          />
-          {mode === "setup" && (
+      {mode === "setup" && (
+        <Section
+          title="Documents"
+          description="Your proof document is used to verify your company."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FileUpload
+              label="Profile picture"
+              name="profilePicture"
+              accept="image/*"
+              hint="PNG or JPG, optional"
+              file={picture}
+              onChange={setPicture}
+              error={fileErrors.picture}
+            />
             <FileUpload
               label="Proof document"
               name="Licence"
@@ -232,21 +229,9 @@ export function CompanyProfileForm({ mode, initial, submitLabel, onSaved }: Prop
               onChange={setLicence}
               error={fileErrors.licence}
             />
-          )}
-        </div>
-        {mode === "edit" && initial?.profilePicture && !picture && (
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="remove-picture"
-              checked={removePicture}
-              onCheckedChange={(c) => setRemovePicture(c === true)}
-            />
-            <Label htmlFor="remove-picture" className="font-normal text-muted-foreground">
-              Remove current profile picture
-            </Label>
           </div>
-        )}
-      </Section>
+        </Section>
+      )}
 
       <Button
         type="submit"

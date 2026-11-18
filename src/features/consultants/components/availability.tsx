@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
-import { formatDate } from "@/lib/format";
+import { cn } from "@/utils/cn";
+import { formatDate } from "@/utils/format";
 
 /** `availability` is the date the consultant becomes available. */
 export function Availability({ value, className }: { value: string | null; className?: string }) {

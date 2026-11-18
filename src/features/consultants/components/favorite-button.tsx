@@ -2,9 +2,9 @@
 
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToggleFavorite } from "@/features/favorites/hooks/use-favorites";
-import type { Consultant } from "../types";
-import { cn } from "@/lib/utils";
+import { useToggleFavorite } from "@/features/consultants/hooks/use-toggle-favorite";
+import type { Consultant } from "@/features/consultants/types/consultants.types";
+import { cn } from "@/utils/cn";
 
 export function FavoriteButton({ person, className }: { person: Consultant; className?: string }) {
   const toggle = useToggleFavorite();

@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import { AppProviders } from "@/providers/app-providers";
+import Providers from "@/providers";
+import { Toaster } from "@/components/ui/sonner";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -21,7 +22,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${jakarta.variable} dark h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <AppProviders>{children}</AppProviders>
+        <Providers>{children}</Providers>
+        <Toaster position="bottom-right" />
       </body>
     </html>
   );

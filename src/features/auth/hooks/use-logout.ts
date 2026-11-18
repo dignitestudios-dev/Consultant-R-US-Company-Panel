@@ -1,38 +1,22 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
-import { logout } from "../api";
-import { clearSession } from "../store/auth-slice";
-import { useAppDispatch } from "@/store/hooks";
-import { ROUTES } from "@/config/routes";
+import { useLogoutMutation } from "@/features/auth/api/auth.mutations";
+import { useClearSession } from "@/hooks/use-clear-session";
 
-/** Clears local state and goes to login (no server call). */
-export function useLogoutLocal() {
-  const dispatch = useAppDispatch();
-  const router = useRouter();
-  const qc = useQueryClient();
-  return () => {
-    dispatch(clearSession());
-    qc.clear();
-    router.replace(ROUTES.login);
-  };
-}
-
-/** Ends the session locally even if the server call fails. */
+/** Ends the session locally even if the server call fails. `isPending` is true while the API call runs. */
 export function useLogout() {
-  const dispatch = useAppDispatch();
-  const router = useRouter();
-  const qc = useQueryClient();
+  const clear = useClearSession();
+  const m = useLogoutMutation();
 
-  return async () => {
+  const logout = async () => {
+    if (m.isPending) return;
     try {
-      await logout();
+      await m.mutateAsync();
     } catch {
       /* the local session is cleared regardless */
     }
-    dispatch(clearSession());
-    qc.clear();
-    router.replace(ROUTES.login);
+    clear();
   };
+
+  return { logout, isPending: m.isPending };
 }

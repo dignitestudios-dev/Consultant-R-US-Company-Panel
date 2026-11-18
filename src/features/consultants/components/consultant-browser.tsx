@@ -1,9 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowDown, ArrowUp, ArrowUpDown, Building2, Loader2, SearchX } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowRight,
+  ArrowUp,
+  ArrowUpDown,
+  Building2,
+  Loader2,
+  SearchX,
+  Users,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -14,16 +24,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Availability } from "./availability";
-import { ConsultantAvatar } from "./consultant-avatar";
-import { ConsultantSheet } from "./consultant-sheet";
-import { FavoriteButton } from "./favorite-button";
-import { FilterBar } from "./filter-bar";
-import { useConsultants } from "../hooks/use-consultants";
-import { emptyFilters } from "../filters";
-import { specialties, type Consultant } from "../types";
+import { Availability } from "@/features/consultants/components/availability";
+import { ConsultantAvatar } from "@/features/consultants/components/consultant-avatar";
+import { ConsultantSheet } from "@/features/consultants/components/consultant-sheet";
+import { FavoriteButton } from "@/features/consultants/components/favorite-button";
+import { FilterBar } from "@/features/consultants/components/filter-bar";
+import { useConsultants } from "@/features/consultants/hooks/use-consultants";
+import { emptyFilters, filterCount } from "@/features/consultants/utils/filters.utils";
+import { specialties } from "@/features/consultants/utils/consultants.utils";
+import type { Consultant } from "@/features/consultants/types/consultants.types";
 import { ROUTES } from "@/config/routes";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/cn";
 
 type SortKey = "name" | "experience";
 type Sort = { key: SortKey; dir: "asc" | "desc" };
@@ -75,11 +86,11 @@ export function ConsultantBrowser() {
 
   const list = useConsultants(filters);
   const pages = list.data?.pages;
-  const loaded = useMemo(() => pages?.flatMap((p) => p.items) ?? [], [pages]);
+  const loaded = pages?.flatMap((p) => p.items) ?? [];
   const total = pages?.[0]?.totalItems ?? 0;
   const companiesCount = pages?.[0]?.companiesCount ?? 0;
 
-  const rows = useMemo(() => {
+  const rows = (() => {
     const q = query.trim().toLowerCase();
     const filtered = q ? loaded.filter((c) => c.name.toLowerCase().includes(q)) : loaded;
     const d = sort.dir === "asc" ? 1 : -1;
@@ -88,7 +99,7 @@ export function ConsultantBrowser() {
         ? a.name.localeCompare(b.name) * d
         : ((a.experience ?? -1) - (b.experience ?? -1)) * d,
     );
-  }, [loaded, query, sort]);
+  })();
 
   // Read the open consultant from the live list so the heart stays in sync.
   const current: Consultant | null = loaded.find((c) => c.id === selected) ?? null;
@@ -104,6 +115,7 @@ export function ConsultantBrowser() {
     setTab(t);
     setOpen(true);
   };
+  const hasFilters = filterCount(filters) > 0 || query.trim() !== "";
   const clearAll = () => {
     setFilters(emptyFilters());
     setQuery("");
@@ -122,10 +134,14 @@ export function ConsultantBrowser() {
           {companiesCount > 0 && (
             <Link
               href={ROUTES.companies}
-              className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-semibold transition-colors hover:border-gold/50"
+              aria-label={`View ${companiesCount} ${companiesCount === 1 ? "company" : "companies"}`}
+              className="group inline-flex h-10 items-center gap-2.5 rounded-lg border border-gold/40 bg-gold-soft px-3.5 text-sm font-bold text-gold shadow-sm transition-all hover:border-gold hover:bg-gold/20 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
             >
-              <Building2 className="size-4 text-gold" />
-              {companiesCount} {companiesCount === 1 ? "company" : "companies"}
+              <Building2 className="size-4" />
+              <span>
+                View {companiesCount} {companiesCount === 1 ? "company" : "companies"}
+              </span>
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           )}
           <p className="text-sm font-semibold text-muted-foreground" role="status">
@@ -272,20 +288,22 @@ export function ConsultantBrowser() {
         )}
 
         {list.isSuccess && rows.length === 0 && (
-          <div className="flex flex-col items-center gap-3 px-6 py-16 text-center animate-in fade-in">
-            <span className="grid size-12 place-items-center rounded-full bg-muted text-muted-foreground">
-              <SearchX className="size-5" />
-            </span>
-            <div className="space-y-1">
-              <h2 className="font-bold">No consultants match</h2>
-              <p className="text-sm text-muted-foreground">
-                Remove a filter or try a different search.
-              </p>
-            </div>
-            <Button variant="outline" onClick={clearAll}>
-              Clear filters
-            </Button>
-          </div>
+          <EmptyState
+            icon={hasFilters ? SearchX : Users}
+            title={hasFilters ? "No consultants match" : "No consultants yet"}
+            description={
+              hasFilters
+                ? "Remove a filter or try a different search."
+                : "Consultants will appear here as they join."
+            }
+            action={
+              hasFilters && (
+                <Button variant="outline" onClick={clearAll}>
+                  Clear filters
+                </Button>
+              )
+            }
+          />
         )}
 
         {list.hasNextPage && (

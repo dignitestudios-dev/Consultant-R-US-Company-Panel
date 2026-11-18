@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CompaniesView } from "@/features/companies/components/companies-view";
+import { CompaniesView } from "@/features/company/components/companies-view";
 
 export const metadata: Metadata = { title: "Companies" };
 
