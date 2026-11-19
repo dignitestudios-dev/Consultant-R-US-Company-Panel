@@ -5,6 +5,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordStrength } from "@/components/shared/password-strength";
+import { PASSWORD_MIN } from "@/utils/password";
 import { cn } from "@/utils/cn";
 
 export function Field({
@@ -125,7 +126,9 @@ export function PasswordField({
           {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
         </button>
       </div>
-      {showStrength && focused && <PasswordStrength value={value} />}
+      {showStrength && focused && value.length >= PASSWORD_MIN && (
+        <PasswordStrength value={value} />
+      )}
     </Field>
   );
 }
