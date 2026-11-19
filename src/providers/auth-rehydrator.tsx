@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { ROUTES } from "@/config/routes";
+import { loginUrlWithReturn } from "@/utils/return-url";
 import { setSessionExpiredHandler } from "@/lib/axios";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { clearSession, hydrate } from "@/store/slices/auth.slice";
@@ -24,7 +24,7 @@ export default function AuthRehydrator({ children }: { children: React.ReactNode
       if (!token) return;
       dispatch(clearSession());
       qc.clear();
-      router.replace(ROUTES.login);
+      router.replace(loginUrlWithReturn());
     });
     return () => setSessionExpiredHandler(null);
   }, [token, dispatch, qc, router]);

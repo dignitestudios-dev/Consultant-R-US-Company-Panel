@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { PasswordField } from "@/components/shared/auth-fields";
+import { LIMITS } from "@/utils/validation";
 import {
   changePasswordSchema,
   deleteAccountSchema,
@@ -64,30 +65,44 @@ export function ChangePasswordDialog({ open, onOpenChange }: DialogProps) {
           noValidate
           className="space-y-4"
         >
-          <PasswordField
-            label="Current password"
-            autoComplete="current-password"
-            error={errors.currentPassword?.message}
-            {...register("currentPassword")}
-          />
-          <PasswordField
-            label="New password"
-            autoComplete="new-password"
-            error={errors.newPassword?.message}
-            {...register("newPassword")}
-          />
-          <PasswordField
-            label="Confirm new password"
-            autoComplete="new-password"
-            error={errors.confirmPassword?.message}
-            {...register("confirmPassword")}
-          />
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <Button type="submit" variant="gold" disabled={m.isPending} className="h-10 font-bold">
-              {m.isPending && <Loader2 className="animate-spin" />} Update
-            </Button>
-          </AlertDialogFooter>
+          <fieldset disabled={m.isPending} className="m-0 min-w-0 border-0 p-0 space-y-4">
+            <PasswordField
+              label="Current password"
+              autoComplete="current-password"
+              required
+              maxLength={LIMITS.passwordMax}
+              error={errors.currentPassword?.message}
+              {...register("currentPassword")}
+            />
+            <PasswordField
+              label="New password"
+              autoComplete="new-password"
+              required
+              showStrength
+              maxLength={LIMITS.passwordMax}
+              error={errors.newPassword?.message}
+              {...register("newPassword")}
+            />
+            <PasswordField
+              label="Confirm new password"
+              autoComplete="new-password"
+              required
+              maxLength={LIMITS.passwordMax}
+              error={errors.confirmPassword?.message}
+              {...register("confirmPassword")}
+            />
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <Button
+                type="submit"
+                variant="gold"
+                disabled={m.isPending}
+                className="h-10 font-bold"
+              >
+                {m.isPending && <Loader2 className="animate-spin" />} Update
+              </Button>
+            </AlertDialogFooter>
+          </fieldset>
         </form>
       </AlertDialogContent>
     </AlertDialog>
@@ -121,23 +136,27 @@ export function DeleteAccountDialog({ open, onOpenChange }: DialogProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <form onSubmit={handleSubmit((v) => m.mutate(v.password))} noValidate className="space-y-4">
-          <PasswordField
-            label="Password"
-            autoComplete="current-password"
-            error={errors.password?.message}
-            {...register("password")}
-          />
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <Button
-              type="submit"
-              variant="destructive"
-              disabled={m.isPending}
-              className="h-10 font-bold"
-            >
-              {m.isPending && <Loader2 className="animate-spin" />} Delete account
-            </Button>
-          </AlertDialogFooter>
+          <fieldset disabled={m.isPending} className="m-0 min-w-0 border-0 p-0 space-y-4">
+            <PasswordField
+              label="Password"
+              autoComplete="current-password"
+              required
+              maxLength={LIMITS.passwordMax}
+              error={errors.password?.message}
+              {...register("password")}
+            />
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={m.isPending}
+                className="h-10 font-bold"
+              >
+                {m.isPending && <Loader2 className="animate-spin" />} Delete account
+              </Button>
+            </AlertDialogFooter>
+          </fieldset>
         </form>
       </AlertDialogContent>
     </AlertDialog>

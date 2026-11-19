@@ -8,6 +8,7 @@ import { useCompany } from "@/features/company/hooks/use-company";
 import { isPendingApproval, isSubscribed } from "@/utils/company";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/config/routes";
+import { loginUrlWithReturn } from "@/utils/return-url";
 
 export function FullScreenLoader() {
   return (
@@ -24,7 +25,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const company = useCompany();
 
   useEffect(() => {
-    if (hydrated && !isAuthed) router.replace(ROUTES.login);
+    if (hydrated && !isAuthed) router.replace(loginUrlWithReturn());
   }, [hydrated, isAuthed, router]);
 
   const incomplete = company.isProfileIncomplete;

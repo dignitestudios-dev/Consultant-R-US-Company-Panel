@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useGuardedMutation } from "@/lib/use-guarded-mutation";
 import { toast } from "sonner";
 import {
   checkEmail,
@@ -15,14 +15,14 @@ import { errorMessage } from "@/utils/api-error";
 export const EMAIL_TAKEN = "EMAIL_TAKEN";
 
 export function useLoginMutation() {
-  return useMutation({
+  return useGuardedMutation({
     mutationFn: login,
     onError: (e) => toast.error(errorMessage(e)),
   });
 }
 
 export function useSignupMutation() {
-  return useMutation({
+  return useGuardedMutation({
     mutationFn: async (v: SignupFormData) => {
       if (await checkEmail(v.email.trim().toLowerCase())) throw new Error(EMAIL_TAKEN);
       return signUp(v);
@@ -31,25 +31,25 @@ export function useSignupMutation() {
 }
 
 export function useLogoutMutation() {
-  return useMutation({ mutationFn: logout });
+  return useGuardedMutation({ mutationFn: logout });
 }
 
 export function useForgotPasswordMutation() {
-  return useMutation({
+  return useGuardedMutation({
     mutationFn: forgotPassword,
     onError: (e) => toast.error(errorMessage(e)),
   });
 }
 
 export function useVerifyOtpMutation(email: string) {
-  return useMutation({
+  return useGuardedMutation({
     mutationFn: (otp: string) => verifyResetOtp(email, otp),
     onError: (e) => toast.error(errorMessage(e)),
   });
 }
 
 export function useResetPasswordMutation(token: string) {
-  return useMutation({
+  return useGuardedMutation({
     mutationFn: (newPassword: string) => resetPassword(newPassword, token),
     onError: (e) => toast.error(errorMessage(e)),
   });

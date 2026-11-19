@@ -16,6 +16,11 @@ export function setSessionExpiredHandler(fn: (() => void) | null) {
   onSessionExpired = fn;
 }
 
+let onServerError: (() => void) | null = null;
+export function setServerErrorHandler(fn: (() => void) | null) {
+  onServerError = fn;
+}
+
 const axiosInstance = axios.create({
   baseURL: env.apiUrl,
   timeout: 90_000,
@@ -58,8 +63,11 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error instanceof AxiosError) {
       if (!error.response) {
+        // Offline is handled by the offline banner; a reachable-but-failing server gets the dialog.
+        if (typeof navigator === "undefined" || navigator.onLine) onServerError?.();
         return Promise.reject(new ApiError("Can't reach the server. Check your connection."));
       }
+      if (error.response.status >= 500) onServerError?.();
       return Promise.reject(
         toApiError(error.response.data?.message, error.response.status, error.config?.url),
       );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Star } from "lucide-react";
+import { Loader2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToggleFavorite } from "@/features/consultants/hooks/use-toggle-favorite";
 import type { Consultant } from "@/features/consultants/types/consultants.types";
@@ -15,6 +15,7 @@ export function FavoriteButton({ person, className }: { person: Consultant; clas
       variant="ghost"
       size="icon-lg"
       aria-pressed={on}
+      disabled={toggle.isPending}
       aria-label={`${on ? "Remove" : "Add"} ${person.name} ${on ? "from" : "to"} favorites`}
       className={className}
       onClick={(e) => {
@@ -22,12 +23,16 @@ export function FavoriteButton({ person, className }: { person: Consultant; clas
         toggle.mutate({ id: person.id, isWishList: on });
       }}
     >
-      <Star
-        className={cn(
-          "size-[18px] transition-all duration-200",
-          on ? "scale-110 fill-gold text-gold" : "text-muted-foreground",
-        )}
-      />
+      {toggle.isPending ? (
+        <Loader2 className="size-[18px] animate-spin text-gold" />
+      ) : (
+        <Star
+          className={cn(
+            "size-[18px] transition-all duration-200",
+            on ? "scale-110 fill-gold text-gold" : "text-muted-foreground",
+          )}
+        />
+      )}
     </Button>
   );
 }

@@ -1,17 +1,23 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Camera, Loader2, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useProfilePicture } from "@/features/company/hooks/use-profile-picture";
 import type { Company } from "@/types/common";
+import {
+  PICTURE_ACCEPT,
+  PICTURE_HINT,
+  validatePicture,
+} from "@/features/company/utils/company.utils";
 import { initials } from "@/utils/format";
 
 /** Large company picture with change / remove actions. Saves as soon as a file is chosen. */
 export function ProfilePictureEditor({ company, name }: { company: Company; name: string }) {
   const input = useRef<HTMLInputElement>(null);
   const { change, remove, isPending } = useProfilePicture(company);
+  const [error, setError] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col items-center gap-4 py-2">
@@ -34,12 +40,15 @@ export function ProfilePictureEditor({ company, name }: { company: Company; name
       <input
         ref={input}
         type="file"
-        accept="image/*"
+        accept={PICTURE_ACCEPT}
         className="hidden"
         tabIndex={-1}
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) change(file);
+          if (!file) return;
+          const problem = validatePicture(file);
+          setError(problem);
+          if (!problem) change(file);
           e.target.value = "";
         }}
       />
@@ -58,6 +67,13 @@ export function ProfilePictureEditor({ company, name }: { company: Company; name
           </Button>
         )}
       </div>
+      {error ? (
+        <p role="alert" className="text-xs font-medium text-destructive">
+          {error}
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground">{PICTURE_HINT}</p>
+      )}
     </div>
   );
 }

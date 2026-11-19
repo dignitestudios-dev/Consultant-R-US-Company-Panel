@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PasswordField, TextField } from "@/components/shared/auth-fields";
 import { ROUTES } from "@/config/routes";
-import { loginSchema } from "@/features/auth/schemas/auth.schema";
+import { LIMITS, loginSchema } from "@/features/auth/schemas/auth.schema";
 import { useLogin } from "@/features/auth/hooks/use-login";
 import type { LoginFormData } from "@/features/auth/types/auth.types";
 
@@ -26,37 +26,43 @@ export function LoginForm() {
         <p className="text-sm text-muted-foreground">Welcome back. Sign in to find consultants.</p>
       </div>
       <form onSubmit={handleSubmit(submit)} noValidate className="space-y-5">
-        <TextField
-          label="Email"
-          type="email"
-          placeholder="you@company.com"
-          autoComplete="email"
-          error={errors.email?.message}
-          {...register("email")}
-        />
-        <PasswordField
-          label="Password"
-          placeholder="Your password"
-          autoComplete="current-password"
-          error={errors.password?.message}
-          {...register("password")}
-        />
-        <div className="-mt-2 text-right">
-          <Link
-            href={ROUTES.forgot}
-            className="text-sm font-semibold text-foreground underline-offset-4 hover:underline"
+        <fieldset disabled={isPending} className="m-0 min-w-0 border-0 p-0 space-y-5">
+          <TextField
+            label="Email"
+            type="email"
+            placeholder="you@company.com"
+            autoComplete="email"
+            required
+            maxLength={LIMITS.email}
+            error={errors.email?.message}
+            {...register("email")}
+          />
+          <PasswordField
+            label="Password"
+            placeholder="Your password"
+            autoComplete="current-password"
+            required
+            maxLength={LIMITS.passwordMax}
+            error={errors.password?.message}
+            {...register("password")}
+          />
+          <div className="-mt-2 text-right">
+            <Link
+              href={ROUTES.forgot}
+              className="text-sm font-semibold text-foreground underline-offset-4 hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
+          <Button
+            type="submit"
+            variant="gold"
+            disabled={isPending}
+            className="h-11 w-full text-sm font-bold"
           >
-            Forgot password?
-          </Link>
-        </div>
-        <Button
-          type="submit"
-          variant="gold"
-          disabled={isPending}
-          className="h-11 w-full text-sm font-bold"
-        >
-          {isPending && <Loader2 className="animate-spin" />} Log in
-        </Button>
+            {isPending && <Loader2 className="animate-spin" />} Log in
+          </Button>
+        </fieldset>
       </form>
       <p className="text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}

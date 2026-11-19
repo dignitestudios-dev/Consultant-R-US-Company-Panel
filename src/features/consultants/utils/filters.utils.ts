@@ -1,4 +1,10 @@
-import type { Filters } from "@/features/consultants/types/consultants.types";
+import type {
+  CertKey,
+  DegreeKey,
+  Filters,
+  ResumeKey,
+} from "@/features/consultants/types/consultants.types";
+import { CERTS, DEGREES, RESUME_TYPES } from "@/features/consultants/utils/consultants.utils";
 
 export const emptyFilters = (): Filters => ({
   experience: "",
@@ -49,4 +55,37 @@ export function toQuery(f: Filters): Record<string, string | boolean> {
   if (f.preferredState.trim()) q.prefferedStateToWork = f.preferredState.trim();
   if (f.preferredCity.trim()) q.prefferedCityToWork = f.preferredCity.trim();
   return q;
+}
+
+/** Filters as URL search params (empty values are dropped by the URL helper). */
+export const filtersToParams = (f: Filters): Record<string, string | null> => ({
+  exp: f.experience || null,
+  age: f.age || null,
+  edu: f.education || null,
+  certs: f.certs.join(",") || null,
+  resumes: f.resumes.join(",") || null,
+  industry: f.industry || null,
+  avail: f.availability || null,
+  state: f.preferredState || null,
+  city: f.preferredCity || null,
+});
+
+const list = (v: string) => v.split(",").filter(Boolean);
+
+/** Rebuilds filters from the URL. Only known keys are accepted. */
+export function filtersFromParams(get: (key: string) => string): Filters {
+  const edu = get("edu");
+  const certKeys = CERTS.map((c) => c.key as string);
+  const resumeKeys = RESUME_TYPES.map((r) => r.key as string);
+  return {
+    experience: get("exp"),
+    age: get("age"),
+    education: DEGREES.some((d) => d.key === edu) ? (edu as DegreeKey) : "",
+    certs: list(get("certs")).filter((c) => certKeys.includes(c)) as CertKey[],
+    resumes: list(get("resumes")).filter((r) => resumeKeys.includes(r)) as ResumeKey[],
+    industry: get("industry"),
+    availability: get("avail"),
+    preferredState: get("state"),
+    preferredCity: get("city"),
+  };
 }

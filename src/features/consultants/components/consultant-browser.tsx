@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowDown,
@@ -30,7 +30,14 @@ import { ConsultantSheet } from "@/features/consultants/components/consultant-sh
 import { FavoriteButton } from "@/features/consultants/components/favorite-button";
 import { FilterBar } from "@/features/consultants/components/filter-bar";
 import { useConsultants } from "@/features/consultants/hooks/use-consultants";
-import { emptyFilters, filterCount } from "@/features/consultants/utils/filters.utils";
+import {
+  emptyFilters,
+  filterCount,
+  filtersFromParams,
+  filtersToParams,
+} from "@/features/consultants/utils/filters.utils";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useUrlParams } from "@/hooks/use-url-params";
 import { specialties } from "@/features/consultants/utils/consultants.utils";
 import type { Consultant } from "@/features/consultants/types/consultants.types";
 import { ROUTES } from "@/config/routes";
@@ -77,9 +84,30 @@ function SortHead({
 const headClass = "text-xs font-bold uppercase tracking-wider text-muted-foreground";
 
 export function ConsultantBrowser() {
-  const [query, setQuery] = useState("");
-  const [filters, setFilters] = useState(emptyFilters());
-  const [sort, setSort] = useState<Sort>({ key: "name", dir: "asc" });
+  // Search, filters and sort live in the URL so a refresh or shared link keeps them.
+  const { get, set } = useUrlParams();
+  const [query, setQuery] = useState(get("q"));
+  const debouncedQuery = useDebounce(query.trim());
+  const filters = filtersFromParams(get);
+  const sortKey: SortKey = get("sort") === "experience" ? "experience" : "name";
+  const sort: Sort = {
+    key: sortKey,
+    dir:
+      get("dir") === "desc"
+        ? "desc"
+        : get("dir") === "asc"
+          ? "asc"
+          : sortKey === "name"
+            ? "asc"
+            : "desc",
+  };
+  const setFilters = (next: typeof filters) => set(filtersToParams(next));
+
+  useEffect(() => {
+    if (debouncedQuery !== get("q")) set({ q: debouncedQuery || null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQuery]);
+
   const [selected, setSelected] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState("profile");
@@ -91,7 +119,7 @@ export function ConsultantBrowser() {
   const companiesCount = pages?.[0]?.companiesCount ?? 0;
 
   const rows = (() => {
-    const q = query.trim().toLowerCase();
+    const q = debouncedQuery.toLowerCase();
     const filtered = q ? loaded.filter((c) => c.name.toLowerCase().includes(q)) : loaded;
     const d = sort.dir === "asc" ? 1 : -1;
     return [...filtered].sort((a, b) =>
@@ -104,12 +132,11 @@ export function ConsultantBrowser() {
   // Read the open consultant from the live list so the heart stays in sync.
   const current: Consultant | null = loaded.find((c) => c.id === selected) ?? null;
 
-  const onSort = (key: SortKey) =>
-    setSort((s) =>
-      s.key === key
-        ? { key, dir: s.dir === "asc" ? "desc" : "asc" }
-        : { key, dir: key === "name" ? "asc" : "desc" },
-    );
+  const onSort = (key: SortKey) => {
+    const dir =
+      sort.key === key ? (sort.dir === "asc" ? "desc" : "asc") : key === "name" ? "asc" : "desc";
+    set({ sort: key === "name" ? null : key, dir });
+  };
   const show = (p: Consultant, t: string) => {
     setSelected(p.id);
     setTab(t);
@@ -117,7 +144,7 @@ export function ConsultantBrowser() {
   };
   const hasFilters = filterCount(filters) > 0 || query.trim() !== "";
   const clearAll = () => {
-    setFilters(emptyFilters());
+    set({ ...filtersToParams(emptyFilters()), q: null });
     setQuery("");
   };
 
@@ -215,7 +242,7 @@ export function ConsultantBrowser() {
                     <TableCell className="py-2 pl-3 pr-0">
                       <FavoriteButton person={p} />
                     </TableCell>
-                    <TableCell className="py-3">
+                    <TableCell className="max-w-[300px] py-3">
                       <div className="flex items-center gap-3">
                         <ConsultantAvatar
                           person={p}
@@ -229,25 +256,33 @@ export function ConsultantBrowser() {
                               e.stopPropagation();
                               show(p, "profile");
                             }}
-                            className="block text-left text-sm font-bold underline-offset-4 outline-none hover:underline focus-visible:underline"
+                            title={p.name}
+                            className="block max-w-full truncate text-left text-sm font-bold underline-offset-4 outline-none hover:underline focus-visible:underline"
                           >
                             {p.name}
                           </button>
-                          <span className="block truncate text-xs text-muted-foreground">
+                          <span
+                            className="block truncate text-xs text-muted-foreground"
+                            title={p.jobTitle ?? undefined}
+                          >
                             {p.jobTitle ?? "Consultant"}
                           </span>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden whitespace-nowrap text-sm font-bold sm:table-cell">
+                    <TableCell className="hidden max-w-[120px] truncate text-sm font-bold sm:table-cell">
                       {p.experience !== null
                         ? `${p.experience} ${p.experience === 1 ? "year" : "years"}`
                         : "—"}
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell">
+                    <TableCell className="hidden max-w-[240px] lg:table-cell">
                       {sp.length > 0 ? (
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="h-6 px-2.5">
+                          <Badge
+                            variant="secondary"
+                            className="h-6 max-w-[160px] truncate px-2.5"
+                            title={sp[0]}
+                          >
                             {sp[0]}
                           </Badge>
                           {sp.length > 1 && (
@@ -260,10 +295,13 @@ export function ConsultantBrowser() {
                         <span className="text-sm text-muted-foreground">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="hidden whitespace-nowrap text-sm xl:table-cell">
+                    <TableCell
+                      className="hidden max-w-[200px] truncate text-sm xl:table-cell"
+                      title={place || undefined}
+                    >
                       {place || "—"}
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">
+                    <TableCell className="hidden max-w-[170px] truncate md:table-cell">
                       <Availability value={p.availability} />
                     </TableCell>
                     <TableCell className="hidden pr-4 text-right sm:table-cell">

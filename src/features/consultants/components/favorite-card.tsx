@@ -39,10 +39,15 @@ export function FavoriteCard({ person: p, onOpen }: { person: Consultant; onOpen
       </div>
       <FavoriteButton person={p} className="absolute top-1.5 right-1.5" />
 
-      <h3 className="max-w-full truncate rounded-xl border bg-background/60 px-4 py-1.5 text-base font-extrabold tracking-wide uppercase shadow-sm">
+      <h3
+        title={p.name}
+        className="max-w-full truncate rounded-xl border bg-background/60 px-4 py-1.5 text-base font-extrabold tracking-wide uppercase shadow-sm"
+      >
         {p.name}
       </h3>
-      <p className="mt-2 max-w-full truncate text-sm font-semibold">{p.jobTitle ?? "Consultant"}</p>
+      <p className="mt-2 max-w-full truncate text-sm font-semibold" title={p.jobTitle ?? undefined}>
+        {p.jobTitle ?? "Consultant"}
+      </p>
       <p className="mt-1 text-sm text-muted-foreground">
         {p.experience !== null
           ? `${p.experience} ${p.experience === 1 ? "year" : "years"} experience`
@@ -50,7 +55,9 @@ export function FavoriteCard({ person: p, onOpen }: { person: Consultant; onOpen
       </p>
       <p className="mt-1 flex max-w-full items-center gap-1.5 text-sm text-muted-foreground">
         <MapPin className="size-3.5 flex-none text-gold" aria-hidden="true" />
-        <span className="truncate">{place || "Location not provided"}</span>
+        <span className="truncate" title={place || undefined}>
+          {place || "Location not provided"}
+        </span>
       </p>
       <Availability value={p.availability} className="mt-1 text-xs text-muted-foreground" />
 

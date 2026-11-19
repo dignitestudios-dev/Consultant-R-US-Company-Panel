@@ -10,16 +10,25 @@ interface SearchInputProps {
   placeholder: string;
   label: string;
   className?: string;
+  maxLength?: number;
 }
 
 /** Search field with a clear (x) button that appears once there is text. */
-export function SearchInput({ value, onChange, placeholder, label, className }: SearchInputProps) {
+export function SearchInput({
+  value,
+  onChange,
+  placeholder,
+  label,
+  className,
+  maxLength = 100,
+}: SearchInputProps) {
   return (
     <div className={cn("relative w-full sm:w-72", className)}>
       <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         aria-label={label}
         value={value}
+        maxLength={maxLength}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="h-10 bg-card pl-9 pr-9"

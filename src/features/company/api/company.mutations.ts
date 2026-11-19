@@ -1,4 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useGuardedMutation } from "@/lib/use-guarded-mutation";
 import { toast } from "sonner";
 import {
   changePassword,
@@ -17,7 +18,7 @@ export function useSaveCompanyMutation() {
   const dispatch = useAppDispatch();
   const qc = useQueryClient();
 
-  return useMutation({
+  return useGuardedMutation({
     mutationFn: (input: SaveCompanyInput) => {
       const body = buildCompanyFormData(input);
       return input.mode === "setup" ? completeProfile(body) : updateProfile(body);
@@ -31,7 +32,7 @@ export function useSaveCompanyMutation() {
 }
 
 export function useChangePasswordMutation(onDone: () => void) {
-  return useMutation({
+  return useGuardedMutation({
     mutationFn: changePassword,
     onSuccess: () => {
       toast.success("Password changed");
@@ -42,7 +43,7 @@ export function useChangePasswordMutation(onDone: () => void) {
 }
 
 export function useDeleteAccountMutation(onDeleted: () => void) {
-  return useMutation({
+  return useGuardedMutation({
     mutationFn: (password: string) => deleteAccount(password),
     onSuccess: () => {
       toast.success("Your account was deleted");

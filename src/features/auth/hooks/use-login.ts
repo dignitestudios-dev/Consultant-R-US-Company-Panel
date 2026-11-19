@@ -5,6 +5,7 @@ import { ROUTES } from "@/config/routes";
 import { useLoginMutation } from "@/features/auth/api/auth.mutations";
 import type { LoginFormData } from "@/features/auth/types/auth.types";
 import { useAppDispatch } from "@/store";
+import { returnPathFromUrl } from "@/utils/return-url";
 import { setSession } from "@/store/slices/auth.slice";
 
 export function useLogin() {
@@ -16,7 +17,9 @@ export function useLogin() {
     m.mutate(v, {
       onSuccess: ({ token, user }) => {
         dispatch(setSession({ token, user }));
-        router.replace(user?.isProfileCompleted ? ROUTES.consultants : ROUTES.setup);
+        router.replace(
+          user?.isProfileCompleted ? (returnPathFromUrl() ?? ROUTES.consultants) : ROUTES.setup,
+        );
       },
     });
 

@@ -1,7 +1,8 @@
 "use client";
 
 import { Dialog } from "@base-ui/react/dialog";
-import { Download, X } from "lucide-react";
+import { useState } from "react";
+import { Download, ImageOff, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { fileExt } from "@/utils/format";
 
@@ -16,6 +17,8 @@ interface DocumentViewerProps {
 /** Shows a document inside the app (image or PDF) instead of opening a new tab. */
 export function DocumentViewer({ url, title, onClose }: DocumentViewerProps) {
   const isImage = !!url && IMAGE_EXT.includes(fileExt(url));
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const failed = !!url && failedUrl === url;
 
   return (
     <Dialog.Root open={!!url} onOpenChange={(o) => !o && onClose()}>
@@ -43,9 +46,23 @@ export function DocumentViewer({ url, title, onClose }: DocumentViewerProps) {
           </div>
           <div className="min-h-0 flex-1 bg-background/60">
             {url &&
-              (isImage ? (
+              (failed ? (
+                <div className="grid size-full place-items-center p-6 text-center">
+                  <div className="space-y-2 text-muted-foreground">
+                    <ImageOff className="mx-auto size-8" />
+                    <p className="text-sm">
+                      This file can&apos;t be previewed. Try downloading it.
+                    </p>
+                  </div>
+                </div>
+              ) : isImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={url} alt={title} className="size-full object-contain" />
+                <img
+                  src={url}
+                  alt={title}
+                  onError={() => setFailedUrl(url)}
+                  className="size-full object-contain"
+                />
               ) : (
                 <iframe src={url} title={title} className="size-full border-0" />
               ))}

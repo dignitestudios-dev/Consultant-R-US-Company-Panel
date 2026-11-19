@@ -46,7 +46,9 @@ export function CompanyPage() {
         <CardHeader className="items-center gap-5 text-center">
           <ProfilePictureEditor company={company} name={name} />
           <div className="min-w-0 space-y-1">
-            <CardTitle className="truncate text-xl font-bold">{name}</CardTitle>
+            <CardTitle className="truncate text-xl font-bold" title={name}>
+              {name}
+            </CardTitle>
             <CardDescription>
               {[company.industryFocus, place].filter(Boolean).join(" · ") || company.email}
             </CardDescription>

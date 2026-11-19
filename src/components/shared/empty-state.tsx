@@ -7,14 +7,24 @@ interface EmptyStateProps {
   description?: string;
   action?: React.ReactNode;
   className?: string;
+  /** Smaller padding for use inside a card or tab. */
+  compact?: boolean;
 }
 
 /** Centered placeholder for lists with nothing to show. */
-export function EmptyState({ icon: Icon, title, description, action, className }: EmptyStateProps) {
+export function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+  className,
+  compact,
+}: EmptyStateProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center gap-5 px-6 py-20 text-center animate-in fade-in zoom-in-95 duration-300",
+        "flex flex-col items-center gap-5 px-6 text-center animate-in fade-in zoom-in-95 duration-300",
+        compact ? "py-8" : "py-20",
         className,
       )}
     >

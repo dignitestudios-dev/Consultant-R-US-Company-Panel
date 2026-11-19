@@ -5,8 +5,8 @@ export interface CompanyFormData {
   industryFocus: string;
   companySize: string;
   description?: string;
-  /** One URL per line. */
-  webUrls?: string;
+  /** Related links, one per entry. */
+  webUrls: string[];
   country: string;
   state: string;
   city: string;

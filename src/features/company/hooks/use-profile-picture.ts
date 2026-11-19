@@ -2,7 +2,7 @@
 
 import { toast } from "sonner";
 import { useSaveCompany } from "@/features/company/hooks/use-save-company";
-import { MAX_FILE_MB } from "@/features/company/utils/company.utils";
+import { validatePicture } from "@/features/company/utils/company.utils";
 import type { Company } from "@/types/common";
 import { webUrls } from "@/utils/company";
 
@@ -19,7 +19,7 @@ export function useProfilePicture(company: Company) {
           industryFocus: company.industryFocus ?? "",
           companySize: company.companySize ?? "",
           description: company.description ?? "",
-          webUrls: webUrls(company).join("\n"),
+          webUrls: webUrls(company),
           country: company.country ?? "",
           state: company.state ?? "",
           city: company.city ?? "",
@@ -35,8 +35,9 @@ export function useProfilePicture(company: Company) {
   return {
     isPending: m.isPending,
     change: (file: File) => {
-      if (file.size > MAX_FILE_MB * 1024 * 1024) {
-        toast.error(`Picture must be under ${MAX_FILE_MB} MB.`);
+      const problem = validatePicture(file);
+      if (problem) {
+        toast.error(problem);
         return;
       }
       save(file, false);

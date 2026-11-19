@@ -19,6 +19,7 @@ interface SearchableSelectProps {
   searchPlaceholder?: string;
   disabled?: boolean;
   error?: string;
+  required?: boolean;
 }
 
 /** Select with a search box. Opens below the field. */
@@ -32,6 +33,7 @@ export function SearchableSelect({
   searchPlaceholder = "Search",
   disabled,
   error,
+  required,
 }: SearchableSelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -48,7 +50,7 @@ export function SearchableSelect({
   };
 
   return (
-    <Field label={label} name={name} error={error}>
+    <Field label={label} name={name} error={error} required={required}>
       <Popover
         open={open}
         onOpenChange={(o) => {

@@ -98,7 +98,10 @@ export function AppHeader() {
                 {initials(companyName)}
               </AvatarFallback>
             </Avatar>
-            <span className="hidden max-w-[160px] truncate text-sm font-semibold md:block">
+            <span
+              className="hidden max-w-[160px] truncate text-sm font-semibold md:block"
+              title={companyName}
+            >
               {companyName}
             </span>
             <ChevronDown className="size-4 text-muted-foreground" />

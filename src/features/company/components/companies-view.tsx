@@ -33,6 +33,14 @@ export function CompaniesView() {
           ))}
         </div>
       ) : isError ? (
+        <div className="flex flex-col items-center gap-3 rounded-[10px] border bg-card px-6 py-16 text-center">
+          <h2 className="font-bold">Couldn&apos;t load companies</h2>
+          <p className="text-sm text-muted-foreground">{error.message}</p>
+          <Button variant="outline" onClick={() => refetch()}>
+            Try again
+          </Button>
+        </div>
+      ) : rows.length === 0 ? (
         <EmptyState
           icon={Building2}
           title={query.trim() ? "No companies found" : "No companies yet"}
@@ -61,7 +69,9 @@ export function CompaniesView() {
                   {initials(c.companyName!)}
                 </AvatarFallback>
               </Avatar>
-              <span className="min-w-0 truncate font-semibold">{c.companyName}</span>
+              <span className="min-w-0 truncate font-semibold" title={c.companyName ?? undefined}>
+                {c.companyName}
+              </span>
             </li>
           ))}
         </ul>
