@@ -77,8 +77,6 @@ export function PasswordField({
   error,
   required,
   showStrength,
-  onFocus,
-  onBlur,
   onChange,
   ...props
 }: {
@@ -86,11 +84,10 @@ export function PasswordField({
   name: string;
   error?: string;
   required?: boolean;
-  /** Shows the strength meter while the field is focused (use on "new password" fields). */
+  /** Shows the requirements checklist, plus the strength bar once 8 characters are typed. */
   showStrength?: boolean;
 } & Omit<React.ComponentProps<"input">, "required">) {
   const [show, setShow] = useState(false);
-  const [focused, setFocused] = useState(false);
   const [value, setValue] = useState("");
   return (
     <Field label={label} name={name} error={error} required={required}>
@@ -103,14 +100,6 @@ export function PasswordField({
           aria-required={required}
           aria-describedby={error ? `${name}-error` : undefined}
           className="h-11 pl-3.5 pr-11 text-sm"
-          onFocus={(e) => {
-            setFocused(true);
-            onFocus?.(e);
-          }}
-          onBlur={(e) => {
-            setFocused(false);
-            onBlur?.(e);
-          }}
           onChange={(e) => {
             setValue(e.target.value);
             onChange?.(e);
@@ -126,9 +115,7 @@ export function PasswordField({
           {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
         </button>
       </div>
-      {showStrength && focused && value.length >= PASSWORD_MIN && (
-        <PasswordStrength value={value} />
-      )}
+      {showStrength && <PasswordStrength value={value} showBar={value.length >= PASSWORD_MIN} />}
     </Field>
   );
 }
