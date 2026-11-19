@@ -15,7 +15,7 @@ import { isPendingApproval } from "@/utils/company";
 /** Shown while an admin has not approved the company yet. */
 export function PendingVerification() {
   const router = useRouter();
-  const { hydrated, isAuthed } = useAuth();
+  const { hydrated, isAuthed, user } = useAuth();
   const company = useCompany();
   const { logout, isPending: loggingOut } = useLogout();
 
