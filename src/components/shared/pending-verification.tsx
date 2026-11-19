@@ -15,7 +15,7 @@ import { isPendingApproval } from "@/utils/company";
 /** Shown while an admin has not approved the company yet. */
 export function PendingVerification() {
   const router = useRouter();
-  const { hydrated, isAuthed, user } = useAuth();
+  const { hydrated, isAuthed } = useAuth();
   const company = useCompany();
   const { logout, isPending: loggingOut } = useLogout();
 
@@ -49,6 +49,12 @@ export function PendingVerification() {
             reviewing your proof document. You&apos;ll be able to use your account as soon as it is
             approved.
           </p>
+          {company.data?.email && (
+            <p className="mx-auto flex w-fit max-w-full items-center gap-2 rounded-lg border bg-background/40 px-3 py-2 text-sm">
+              <span className="text-muted-foreground">Signed in as</span>
+              <span className="min-w-0 truncate font-semibold">{company.data.email}</span>
+            </p>
+          )}
           <p className="text-sm text-muted-foreground">
             Questions? Contact us at{" "}
             <a
