@@ -23,6 +23,16 @@ import { formatPhone, telHref } from "@/utils/format";
 import type { Consultant } from "@/features/consultants/types/consultants.types";
 import { cn } from "@/utils/cn";
 
+const TAB_ITEMS = [
+  { value: "profile", label: "Profile" },
+  { value: "resume", label: "Resumes" },
+  { value: "certificates", label: "Certificates / Degrees" },
+];
+
+/** Button-style tabs; the selected one is filled with the gold primary. */
+const TAB_CLASS =
+  "h-11! flex-1 whitespace-normal rounded-lg! border-border! bg-card px-3! text-sm! font-semibold! text-foreground/80 hover:bg-accent hover:text-foreground data-active:border-transparent! data-active:bg-gradient-to-b! data-active:from-[#b47f2d] data-active:to-[#956420] data-active:text-white! data-active:shadow-[0_6px_20px_-8px_rgb(169_116_42/0.7)]! dark:data-active:bg-gradient-to-b!";
+
 export function ConsultantSheet({
   person,
   open,
@@ -104,10 +114,12 @@ export function ConsultantSheet({
               className="min-h-0 flex-1 gap-0"
             >
               <div className="px-5 pt-3">
-                <TabsList>
-                  <TabsTrigger value="profile">Profile</TabsTrigger>
-                  <TabsTrigger value="resume">Resumes</TabsTrigger>
-                  <TabsTrigger value="certificates">Certificates / Degrees</TabsTrigger>
+                <TabsList className="h-auto! w-full gap-2 bg-transparent p-0">
+                  {TAB_ITEMS.map((t) => (
+                    <TabsTrigger key={t.value} value={t.value} className={TAB_CLASS}>
+                      {t.label}
+                    </TabsTrigger>
+                  ))}
                 </TabsList>
               </div>
               <Separator className="mt-3" />
